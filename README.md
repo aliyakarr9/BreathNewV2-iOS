@@ -34,14 +34,20 @@ Built entirely with **SwiftUI**, it offers a seamless, native experience with fu
 <div align="center">
   <table>
     <tr>
-      <td align="center"><strong>Dashboard (English)</strong></td>
-      <td align="center"><strong>Settings & Currency</strong></td>
-      <td align="center"><strong>Achievements</strong></td>
+      <td align="center"><strong>Dashboard</strong></td>
+      <td align="center"><strong>Settings</strong></td>
     </tr>
     <tr>
       <td><img src="dashboard.png" width="250"></td>
       <td><img src="settings.png" width="250"></td>
-      <td><img src="achievements.png" width="250"></td>
+    </tr>
+    <tr>
+      <td align="center"><strong>Health Timeline</strong></td>
+      <td align="center"><strong>Badges (Achievements)</strong></td>
+    </tr>
+    <tr>
+      <td><img src="healt.png" width="250"></td>
+      <td><img src="badges.png" width="250"></td>
     </tr>
   </table>
 </div>
