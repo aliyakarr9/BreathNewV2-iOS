@@ -2,13 +2,13 @@
 
 <div align="center">
   <p>
-    <strong>Track your journey to a smoke-free life with real-time health stats and savings calculator.</strong>
+    <strong>Track your journey to a smoke-free life with real-time health stats, multi-currency savings calculator, and achievements.</strong>
   </p>
   
   <p>
     <a href="#features">Features</a> •
-    <a href="#tech-stack">Tech Stack</a> •
-    <a href="#screenshots">Screenshots</a>
+    <a href="#screenshots">Screenshots</a> •
+    <a href="#tech-stack">Tech Stack</a>
   </p>
 </div>
 
@@ -16,57 +16,49 @@
 
 ## 📖 About The Project
 
-**BreathNew** is a modern iOS application designed to help users quit smoking. Unlike simple counters, it focuses on the *gains* rather than the loss. It visualizes lung recovery, calculates money saved in real-time with multi-currency support, and tracks the exact time passed since the last cigarette.
+**BreathNew** is a modern iOS application designed to help users quit smoking by focusing on positive progress. It visualizes lung health recovery, calculates money saved in real-time with multi-currency support (USD, EUR, GBP, TRY), tracks smoke-free duration down to the second, and rewards progress with achievements.
 
-Built entirely with **SwiftUI**, it offers a seamless and native experience with support for **Dark Mode** and **Localization (English & Turkish)**.
+Built entirely with **SwiftUI**, it offers a seamless, native experience with full support for **English and Turkish** languages.
 
 ## ✨ Key Features
 
 * **⏱ Real-Time Tracker:** Tracks years, months, days, hours, minutes, and seconds smoke-free.
-* **🫁 Health Visualization:** Dynamic lung animation that fills up as your health recovers.
-* **💰 Savings Calculator:** Automatically calculates money saved based on user inputs.
-* **🌍 Multi-Currency Support:** Support for USD ($), EUR (€), GBP (£), and TRY (₺).
-* **🇹🇷/🇬🇧 Localization:** Full support for Turkish and English languages.
-* **⚙️ Customizable Settings:** Users can edit quit dates, pack prices, and habits.
+* **🫁 Health Recovery:** Visualizes lung health improvement with dynamic animations.
+* **💰 Multi-Currency Savings:** Automatically calculates money saved in ₺, $, €, or £.
+* **🏆 Achievements:** Unlocks badges for milestones (e.g., 24 Hours, 1 Week, 1 Month).
+* **🌍 Localization:** Fully localized for English and Turkish speakers.
+* **⚙️ Customizable:** Easily adjust quit date, cigarettes per day, and pack price.
 
 ## 📸 Screenshots
 
 <div align="center">
   <table>
     <tr>
-      <td align="center"><strong>Dashboard (Light)</strong></td>
-      <td align="center"><strong>Settings (Turkish)</strong></td>
-      <td align="center"><strong>Dashboard (Dark)</strong></td>
+      <td align="center"><strong>Dashboard (English)</strong></td>
+      <td align="center"><strong>Settings & Currency</strong></td>
+      <td align="center"><strong>Achievements</strong></td>
     </tr>
     <tr>
       <td><img src="dashboard.png" width="250"></td>
       <td><img src="settings.png" width="250"></td>
-      <td><img src="empty_state.png" width="250"></td>
+      <td><img src="achievements.png" width="250"></td>
     </tr>
   </table>
 </div>
 
-*(Note: These are actual screenshots from the running application.)*
+*(Note: These are actual screenshots from the application.)*
 
 ## 🛠 Tech Stack
 
 * **Language:** Swift 5
 * **UI Framework:** SwiftUI
 * **Architecture:** MVVM (Model-View-ViewModel)
-* **Data Persistence:** @AppStorage / UserDefaults
+* **Data Persistence:** @AppStorage (UserDefaults)
+* **Localization:** String Catalogs (.xcstrings)
 * **Tools:** Xcode, Git & GitHub
-
-## 🚀 How to Run
-
-1.  Clone the repo:
-    ```sh
-    git clone [https://github.com/aliyakarr9/BreathNewV2-iOS.git](https://github.com/aliyakarr9/BreathNewV2-iOS.git)
-    ```
-2.  Open `BreathNew.xcodeproj` in Xcode.
-3.  Select a simulator (e.g., iPhone 15 Pro) and press **Run (Cmd+R)**.
 
 ---
 
 <div align="center">
-  <p>Developed with ❤️ by Ali Yakar</p>
+  <p>Developed with ❤️ using SwiftUI</p>
 </div>
