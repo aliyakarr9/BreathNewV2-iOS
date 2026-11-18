@@ -2,27 +2,29 @@ import SwiftUI
 
 struct AchievementsView: View {
     @StateObject private var viewModel = AchievementsViewModel()
+    @EnvironmentObject var languageManager: LanguageManager
 
-    let columns = [
-        GridItem(.adaptive(minimum: 100))
-    ]
+    let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 3)
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVGrid(columns: columns, spacing: 20) {
+                LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(viewModel.badges) { badge in
                         BadgeView(badge: badge)
                     }
                 }
-                .padding()
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 24)
             }
-            // Başlık zaten otomatik çevrilir ama garanti olsun
             .navigationTitle("Achievements")
+            .background(Color.appBackground)
             .onAppear {
                 viewModel.updateBadges()
             }
         }
+        .id(languageManager.selectedLanguage)
     }
 }
 
@@ -30,23 +32,23 @@ struct BadgeView: View {
     let badge: Badge
 
     var body: some View {
-        VStack {
+        VStack(spacing: 12) {
             Image(systemName: badge.iconName)
                 .resizable()
                 .scaledToFit()
-                .frame(height: 50)
-                .foregroundColor(badge.isUnlocked ? .yellow : .gray)
+                .frame(height: 44)
+                .foregroundStyle(badge.isUnlocked ? Color.badgeGold : Color.primary.opacity(0.18))
 
-            // DÜZELTME: badge.title'ı LocalizedStringKey içine aldık
             Text(LocalizedStringKey(badge.title))
-                .font(.caption)
-                .bold()
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(badge.isUnlocked ? .primary : .secondary)
                 .multilineTextAlignment(.center)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
-        .padding()
-        .frame(width: 100, height: 120)
-        .background(Color(UIColor.secondarySystemBackground))
-        .cornerRadius(12)
-        .opacity(badge.isUnlocked ? 1.0 : 0.6)
+        .frame(height: 84)
+        .card(padding: 16)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(badge.isUnlocked ? .isSelected : [])
     }
 }

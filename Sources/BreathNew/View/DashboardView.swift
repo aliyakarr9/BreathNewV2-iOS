@@ -7,19 +7,16 @@ struct DashboardView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Timer Card
                     TimerCard(components: viewModel.timeElapsed, color: .primaryGreen)
                         .padding(.horizontal)
 
-                    // Lung Health Animation
                     LungHealthCard(progress: viewModel.lungHealthProgress, color: .primaryGreen)
                         .padding(.horizontal)
 
-                    // Stats Grid
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                         StatCard(
                             title: "Money Saved",
-                            value: formatMoney(viewModel.moneySaved),
+                            value: viewModel.formattedMoney,
                             icon: "banknote",
                             color: .primaryGreen
                         )
@@ -33,7 +30,7 @@ struct DashboardView: View {
 
                         StatCard(
                             title: "Life Regained",
-                            value: formatLifeRegained(viewModel.lifeRegained),
+                            value: viewModel.formattedLifeRegained,
                             icon: "heart.fill",
                             color: .red
                         )
@@ -44,27 +41,6 @@ struct DashboardView: View {
             }
             .navigationTitle("Dashboard")
             .background(Color(UIColor.systemGroupedBackground))
-        }
-    }
-
-    func formatMoney(_ amount: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = Locale.current.currency?.identifier ?? "USD"
-        return formatter.string(from: NSNumber(value: amount)) ?? "$0.00"
-    }
-
-    func formatLifeRegained(_ seconds: TimeInterval) -> String {
-        let days = Int(seconds) / 86400
-        let hours = (Int(seconds) % 86400) / 3600
-        let minutes = (Int(seconds) % 3600) / 60
-
-        if days > 0 {
-            return "\(days)d \(hours)h"
-        } else if hours > 0 {
-            return "\(hours)h \(minutes)m"
-        } else {
-            return "\(minutes)m"
         }
     }
 }
@@ -104,7 +80,7 @@ struct TimeUnit: View {
             Text("\(value)")
                 .font(.title2)
                 .bold()
-            Text(unit)
+            Text(LocalizedStringKey(unit))
                 .font(.caption2)
                 .foregroundColor(.secondary)
         }
@@ -125,27 +101,32 @@ struct LungHealthCard: View {
                     .stroke(Color.gray.opacity(0.1), lineWidth: 10)
                     .frame(height: 180)
 
-                Image(systemName: "lungs.fill")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(height: 100)
-                    .foregroundColor(Color.gray.opacity(0.2))
-                    .overlay(
-                        GeometryReader { geometry in
-                            VStack {
-                                Spacer()
-                                Rectangle()
-                                    .frame(height: geometry.size.height * CGFloat(progress))
-                                    .foregroundColor(color)
-                            }
-                            .mask(
-                                Image(systemName: "lungs.fill")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(height: 100)
-                            )
+                GeometryReader { geometry in
+                    let lungSize = min(geometry.size.width, geometry.size.height) * 0.55
+                    ZStack {
+                        Image(systemName: "lungs.fill")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: lungSize)
+                            .foregroundColor(Color.gray.opacity(0.2))
+
+                        VStack {
+                            Spacer()
+                            Rectangle()
+                                .frame(height: lungSize * CGFloat(progress))
+                                .foregroundColor(color)
                         }
-                    )
+                        .frame(height: lungSize)
+                        .mask(
+                            Image(systemName: "lungs.fill")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(height: lungSize)
+                        )
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .frame(height: 180)
             }
             .padding()
 
@@ -182,7 +163,7 @@ struct StatCard: View {
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
 
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.caption)
                 .foregroundColor(.secondary)
         }

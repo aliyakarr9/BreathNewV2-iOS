@@ -9,6 +9,9 @@ struct BreathNewApp: App {
             ContentView()
                 .environmentObject(languageManager)
                 .environment(\.locale, .init(identifier: languageManager.selectedLanguage))
+                .task(id: languageManager.selectedLanguage) {
+                    await NotificationManager.shared.refresh()
+                }
         }
     }
 }

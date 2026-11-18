@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AchievementsView: View {
     @StateObject private var viewModel = AchievementsViewModel()
+    @EnvironmentObject var languageManager: LanguageManager
 
     let columns = [
         GridItem(.adaptive(minimum: 100))
@@ -22,6 +23,7 @@ struct AchievementsView: View {
                 viewModel.updateBadges()
             }
         }
+        .id(languageManager.selectedLanguage)
     }
 }
 
@@ -36,7 +38,7 @@ struct BadgeView: View {
                 .frame(height: 50)
                 .foregroundColor(badge.isUnlocked ? .yellow : .gray)
 
-            Text(badge.title)
+            Text(LocalizedStringKey(badge.title))
                 .font(.caption)
                 .bold()
                 .multilineTextAlignment(.center)

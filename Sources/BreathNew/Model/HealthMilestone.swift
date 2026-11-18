@@ -4,8 +4,8 @@ struct HealthMilestone: Identifiable, Equatable {
     let id: UUID = UUID()
     let title: String
     let description: String
-    let duration: TimeInterval // seconds required to reach this
+    let duration: TimeInterval
 
     var isCompleted: Bool = false
-    var progress: Double = 0.0 // 0.0 to 1.0
+    var progress: Double = 0.0
 }

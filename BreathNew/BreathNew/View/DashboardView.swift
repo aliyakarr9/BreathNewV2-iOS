@@ -2,113 +2,83 @@ import SwiftUI
 
 struct DashboardView: View {
     @StateObject private var viewModel = DashboardViewModel()
-    
-    // DÜZELTME 1: Dil yöneticisini buraya çağırıyoruz (Dil kontrolü için)
-    @EnvironmentObject var languageManager: LanguageManager
-    
-    // Ayarlardan seçilen para birimini buradan okuyoruz
-    @AppStorage("currencyCode") private var currencyCode = "TRY"
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 20) {
-                    // Timer Card
-                    TimerCard(components: viewModel.timeElapsed, color: .primaryGreen)
-                        .padding(.horizontal)
+                VStack(spacing: 16) {
+                    TimerCard(components: viewModel.timeElapsed)
 
-                    // Lung Health Animation
-                    LungHealthCard(progress: viewModel.lungHealthProgress, color: .primaryGreen)
-                        .padding(.horizontal)
+                    LungHealthCard(progress: viewModel.lungHealthProgress, daysElapsed: viewModel.daysElapsed, color: .primaryGreen)
 
-                    // Stats Grid
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+                    HStack(spacing: 16) {
                         StatCard(
                             title: "Money Saved",
-                            value: formatMoney(viewModel.moneySaved),
-                            icon: "banknote",
+                            value: viewModel.formattedMoney,
+                            icon: "banknote.fill",
                             color: .primaryGreen
                         )
 
                         StatCard(
                             title: "Not Smoked",
-                            value: String(format: "%.0f", viewModel.cigarettesNotSmoked),
+                            value: viewModel.cigarettesNotSmoked.formatted(.number.precision(.fractionLength(0))),
                             icon: "smoke.fill",
                             color: .gray
                         )
-
-                        StatCard(
-                            title: "Life Regained",
-                            value: formatLifeRegained(viewModel.lifeRegained),
-                            icon: "heart.fill",
-                            color: .red
-                        )
                     }
-                    .padding(.horizontal)
+
+                    StatCard(
+                        title: "Life Regained",
+                        value: viewModel.formattedLifeRegained,
+                        icon: "heart.fill",
+                        color: .red
+                    )
                 }
-                .padding(.vertical)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 24)
             }
             .navigationTitle("Dashboard")
-            .background(Color(UIColor.systemGroupedBackground))
-        }
-    }
-
-    // Para birimi formatı
-    func formatMoney(_ amount: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = currencyCode
-        return formatter.string(from: NSNumber(value: amount)) ?? "\(currencyCode) 0.00"
-    }
-
-    // DÜZELTME 2: Bu fonksiyonu dile duyarlı hale getirdik
-    func formatLifeRegained(_ seconds: TimeInterval) -> String {
-        let days = Int(seconds) / 86400
-        let hours = (Int(seconds) % 86400) / 3600
-        let minutes = (Int(seconds) % 3600) / 60
-
-        // Eğer seçili dil Türkçe ("tr") ise Türkçe kısaltmalar kullan
-        let isTurkish = languageManager.selectedLanguage == "tr"
-        
-        let d = isTurkish ? "g" : "d"   // gün / day
-        let h = isTurkish ? "sa" : "h"  // saat / hour
-        let m = isTurkish ? "dk" : "m"  // dakika / minute
-
-        if days > 0 {
-            return "\(days)\(d) \(hours)\(h)"
-        } else if hours > 0 {
-            return "\(hours)\(h) \(minutes)\(m)"
-        } else {
-            return "\(minutes)\(m)"
+            .background(Color.appBackground)
         }
     }
 }
 
-// --- DİĞER KARTLAR (AYNEN KALIYOR) ---
-
 struct TimerCard: View {
     let components: DateComponents
-    let color: Color
+
+    private var units: [(value: Int, label: String)] {
+        let all: [(value: Int, label: String)] = [
+            (components.year ?? 0, "Yr"),
+            (components.month ?? 0, "Mo"),
+            (components.day ?? 0, "Day"),
+            (components.hour ?? 0, "Hr"),
+            (components.minute ?? 0, "Min"),
+            (components.second ?? 0, "Sec")
+        ]
+        let firstUsed = all.firstIndex { $0.value > 0 } ?? 3
+        return Array(all[min(firstUsed, 3)...])
+    }
 
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 14) {
             Text("Smoke Free Duration")
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
 
-            HStack(spacing: 15) {
-                TimeUnit(value: components.year ?? 0, unit: "Yr")
-                TimeUnit(value: components.month ?? 0, unit: "Mo")
-                TimeUnit(value: components.day ?? 0, unit: "Day")
-                TimeUnit(value: components.hour ?? 0, unit: "Hr")
-                TimeUnit(value: components.minute ?? 0, unit: "Min")
-                TimeUnit(value: components.second ?? 0, unit: "Sec")
+            HStack(spacing: 0) {
+                ForEach(Array(units.enumerated()), id: \.element.label) { index, unit in
+                    if index > 0 {
+                        Divider()
+                            .frame(height: 30)
+                    }
+                    TimeUnit(value: unit.value, unit: unit.label)
+                        .frame(maxWidth: .infinity)
+                }
             }
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .card()
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -117,65 +87,135 @@ struct TimeUnit: View {
     let unit: String
 
     var body: some View {
-        VStack {
+        VStack(spacing: 2) {
             Text("\(value)")
-                .font(.title2)
-                .bold()
+                .font(.system(.title, design: .rounded, weight: .bold))
+                .monospacedDigit()
+                .contentTransition(.numericText())
+                .animation(.default, value: value)
             Text(LocalizedStringKey(unit))
-                .font(.caption2)
-                .foregroundColor(.secondary)
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
     }
 }
 
 struct LungHealthCard: View {
     let progress: Double
+    let daysElapsed: Double
     let color: Color
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var animatedProgress: Double = 0.0
+    @State private var isBreathing: Bool = false
+    @State private var showingInfo = false
+
+    private let ringSize: CGFloat = 190
+    private let ringWidth: CGFloat = 10
+
+    private var fillGradient: LinearGradient {
+        LinearGradient(
+            colors: [color.opacity(0.6), color],
+            startPoint: .bottom,
+            endPoint: .top
+        )
+    }
+
     var body: some View {
-        VStack {
+        VStack(spacing: 16) {
             Text("Health Recovery")
                 .font(.headline)
 
             ZStack {
                 Circle()
-                    .stroke(Color.gray.opacity(0.1), lineWidth: 10)
-                    .frame(height: 180)
+                    .stroke(Color.trackFill, lineWidth: ringWidth)
 
-                Image(systemName: "lungs.fill")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(height: 100)
-                    .foregroundColor(Color.gray.opacity(0.2))
-                    .overlay(
-                        GeometryReader { geometry in
-                            VStack {
-                                Spacer()
-                                Rectangle()
-                                    .frame(height: geometry.size.height * CGFloat(progress))
-                                    .foregroundColor(color)
-                            }
-                            .mask(
-                                Image(systemName: "lungs.fill")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(height: 100)
-                            )
-                        }
-                    )
+                Circle()
+                    .trim(from: 0, to: animatedProgress)
+                    .stroke(color, style: StrokeStyle(lineWidth: ringWidth, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+
+                lungs
+                    .scaleEffect(isBreathing ? 1.04 : 0.97)
             }
-            .padding()
+            .frame(width: ringSize, height: ringSize)
+            .padding(.vertical, 4)
 
-            Text("\(Int(progress * 100))%")
-                .font(.title)
-                .bold()
-                .foregroundColor(color)
+            VStack(spacing: 6) {
+                Text(animatedProgress, format: .percent.precision(.fractionLength(0)))
+                    .font(.system(size: 40, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundStyle(color)
+                    .contentTransition(.numericText())
+
+                Text(motivationalMessage)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
-        .padding()
-        .frame(maxWidth: .infinity)
-        .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .card()
+        .overlay(alignment: .topTrailing) {
+            Button {
+                showingInfo = true
+            } label: {
+                Image(systemName: "info.circle")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 44, height: 44)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Health Information")
+            .padding(6)
+        }
+        .sheet(isPresented: $showingInfo) {
+            HealthInfoView()
+        }
+        .onAppear {
+            withAnimation(.spring(response: 1.2, dampingFraction: 0.85)) {
+                animatedProgress = progress
+            }
+            guard !reduceMotion else { return }
+            withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
+                isBreathing = true
+            }
+        }
+        .onChange(of: progress) { _, newValue in
+            withAnimation(.spring(response: 0.8, dampingFraction: 0.85)) {
+                animatedProgress = newValue
+            }
+        }
+    }
+
+    private var lungs: some View {
+        let lungSize = ringSize * 0.5
+        let symbol = Image(systemName: "lungs.fill")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(height: lungSize)
+
+        return ZStack {
+            symbol
+                .foregroundStyle(Color.trackFill)
+
+            symbol
+                .foregroundStyle(color)
+                .opacity(isBreathing ? 0.22 : 0.08)
+
+            symbol
+                .foregroundStyle(fillGradient)
+                .mask(alignment: .bottom) {
+                    Rectangle()
+                        .frame(height: lungSize * animatedProgress)
+                }
+        }
+        .accessibilityHidden(true)
+    }
+
+    private var motivationalMessage: String {
+        let isTurkish = UserDefaults.standard.string(forKey: "language") == "tr"
+        return MotivationalMessages.message(forDaysElapsed: daysElapsed, isTurkish: isTurkish)
     }
 }
 
@@ -186,26 +226,26 @@ struct StatCard: View {
     let color: Color
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Image(systemName: icon)
-                    .foregroundColor(color)
-                Spacer()
+        VStack(alignment: .leading, spacing: 12) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(color)
+                .frame(height: 24)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(value)
+                    .font(.system(.title2, design: .rounded, weight: .bold))
+                    .monospacedDigit()
+                    .minimumScaleFactor(0.5)
+                    .lineLimit(1)
+
+                Text(LocalizedStringKey(title))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
-
-            Text(value)
-                .font(.title2)
-                .bold()
-                .minimumScaleFactor(0.5)
-                .lineLimit(1)
-
-            Text(LocalizedStringKey(title))
-                .font(.caption)
-                .foregroundColor(.secondary)
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .card(padding: 18)
+        .accessibilityElement(children: .combine)
     }
 }

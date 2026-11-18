@@ -1,4 +1,6 @@
 import Foundation
+import SwiftUI
+import Combine
 
 class OnboardingViewModel: ObservableObject {
     @Published var quitDate: Date = Date()
@@ -8,14 +10,18 @@ class OnboardingViewModel: ObservableObject {
     @Published var timePerCigarette: Int = 11
 
     func save() {
+        let initialPriceEntry = PriceEntry(date: quitDate, price: packPrice)
+
         let userData = UserData(
             quitDate: quitDate,
             cigarettesPerDay: cigarettesPerDay,
             packSize: packSize,
             packPrice: packPrice,
-            timePerCigarette: timePerCigarette
+            timePerCigarette: timePerCigarette,
+            priceHistory: [initialPriceEntry]
         )
         DataManager.shared.saveUserData(userData)
         DataManager.shared.completeOnboarding()
     }
 }
+

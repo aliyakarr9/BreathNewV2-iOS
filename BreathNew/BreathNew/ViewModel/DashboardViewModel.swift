@@ -6,8 +6,11 @@ class DashboardViewModel: ObservableObject {
     @Published var timeElapsed: DateComponents = DateComponents()
     @Published var moneySaved: Double = 0.0
     @Published var cigarettesNotSmoked: Double = 0.0
-    @Published var lifeRegained: TimeInterval = 0.0 // in seconds
-    @Published var lungHealthProgress: Double = 0.0 // 0.0 to 1.0
+    @Published var lifeRegained: TimeInterval = 0.0
+    @Published var lungHealthProgress: Double = 0.0
+    @Published var daysElapsed: Double = 0.0
+    @Published var formattedMoney: String = ""
+    @Published var formattedLifeRegained: String = ""
 
     private var cancellables = Set<AnyCancellable>()
     private var timer: AnyCancellable?
@@ -22,9 +25,9 @@ class DashboardViewModel: ObservableObject {
     }
 
     private func setupSubscriptions() {
-        // Update calculations whenever UserData changes
         DataManager.shared.$userData
-            .sink { [weak self] _ in
+            .combineLatest(DataManager.shared.$currencyCode)
+            .sink { [weak self] _, _ in
                 self?.updateCalculations()
             }
             .store(in: &cancellables)
@@ -43,40 +46,58 @@ class DashboardViewModel: ObservableObject {
         let now = Date()
         let quitDate = data.quitDate
 
-        // Ensure we don't calculate future dates if quitDate is somehow in future (unlikely but safe)
         let elapsed = now.timeIntervalSince(quitDate)
         guard elapsed > 0 else {
             resetValues()
             return
         }
 
-        // Time Elapsed Components
         let calendar = Calendar.current
         timeElapsed = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: quitDate, to: now)
 
-        // Basic Stats
         let daysElapsed = elapsed / 86400.0
         let cigarettesPerDay = Double(data.cigarettesPerDay)
         let totalCigarettesNotSmoked = daysElapsed * cigarettesPerDay
         self.cigarettesNotSmoked = totalCigarettesNotSmoked
 
-        // Money Saved
-        // (Pack Price / Pack Size) * Cigarettes Not Smoked
-        if data.packSize > 0 {
-            let costPerCigarette = data.packPrice / Double(data.packSize)
-            self.moneySaved = costPerCigarette * totalCigarettesNotSmoked
-        }
+        self.moneySaved = data.moneySaved(until: now)
 
-        // Life Regained
-        // 1 cigarette = 11 minutes (660 seconds)
-        // result in seconds
-        let lifeRegainedPerCigarette: TimeInterval = 11 * 60
+        let lifeRegainedPerCigarette: TimeInterval = Double(data.timePerCigarette) * 60
         self.lifeRegained = totalCigarettesNotSmoked * lifeRegainedPerCigarette
 
-        // Lung Health (1 Year = 100%)
-        // 1 year in seconds = 365 * 86400 = 31,536,000
-        let oneYearSeconds: Double = 31_536_000
-        self.lungHealthProgress = min(elapsed / oneYearSeconds, 1.0)
+        let daysForLung = elapsed / 86400.0
+        self.daysElapsed = daysForLung
+        self.lungHealthProgress = min(pow(min(daysForLung / 365.0, 1.0), 0.35), 1.0)
+
+        self.formattedMoney = formatMoney(moneySaved)
+        self.formattedLifeRegained = formatLifeRegained(lifeRegained)
+    }
+
+    func formatMoney(_ amount: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = DataManager.shared.currencyCode
+        return formatter.string(from: NSNumber(value: amount)) ?? "\(DataManager.shared.currencyCode) 0.00"
+    }
+
+    func formatLifeRegained(_ seconds: TimeInterval) -> String {
+        let days = Int(seconds) / 86400
+        let hours = (Int(seconds) % 86400) / 3600
+        let minutes = (Int(seconds) % 3600) / 60
+
+        let isTurkish = UserDefaults.standard.string(forKey: "language") == "tr"
+
+        let d = isTurkish ? "g" : "d"
+        let h = isTurkish ? "sa" : "h"
+        let m = isTurkish ? "dk" : "m"
+
+        if days > 0 {
+            return "\(days) \(d) \(hours) \(h)"
+        } else if hours > 0 {
+            return "\(hours) \(h) \(minutes) \(m)"
+        } else {
+            return "\(minutes) \(m)"
+        }
     }
 
     private func resetValues() {
@@ -85,5 +106,8 @@ class DashboardViewModel: ObservableObject {
         cigarettesNotSmoked = 0.0
         lifeRegained = 0.0
         lungHealthProgress = 0.0
+        formattedMoney = ""
+        formattedLifeRegained = ""
     }
 }
+
