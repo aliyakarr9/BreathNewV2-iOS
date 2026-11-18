@@ -97,4 +97,4 @@ Yeni bir dil eklemek, sağlık çizelgesini güncel kaynaklarla genişletmek vey
 👨‍💻 **Geliştiren & Tasarlayan:** [Ali Yakar](https://github.com/aliyakarr9)  
 📧 İletişim, işbirlikleri ve geri bildirim için GitHub üzerinden bana ulaşabilirsiniz.
 
-> *"Sigarasız geçen her saat, geri kazanılmış bir saattir."*
+
