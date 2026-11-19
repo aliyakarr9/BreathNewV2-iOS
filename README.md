@@ -54,6 +54,14 @@ Aşamaların dayandığı kaynaklar:
 
 ---
 
+## 📋 Ürün Belgeleri
+
+* **[Ürün gereksinimleri (PRD)](docs/PRD.md):** Çözülen problem, hedef kullanıcı, kapsam, başarı ölçütleri ve riskler.
+* **[Kararlar](docs/KARARLAR.md):** Alınan ürün kararları, gerekçeleri ve her birinin bedeli.
+* **[Yol haritası](docs/YOL-HARITASI.md):** Sıradaki işler ve neden o sırada oldukları.
+
+---
+
 ## 🛠 Teknik Detaylar & Mimari
 
 * **Mimari:** MVVM. Her ekranın kendi görünüm modeli vardır; veri tek bir `DataManager` üzerinden okunur ve yazılır.
